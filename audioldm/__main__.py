@@ -153,7 +153,10 @@ if(args.file_path is not None):
 
 text = args.text
 embedding_path = args.embedding_path
-embedding = torch.load(embedding_path)
+if embedding_path:
+    embedding = torch.load(embedding_path)
+else:
+    embedding=None
 random_seed = args.seed
 duration = args.duration
 guidance_scale = args.guidance_scale
