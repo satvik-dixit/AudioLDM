@@ -199,7 +199,7 @@ class LatentDiffusion(DDPM):
             else:
                 xc = x
             if not self.cond_stage_trainable or force_c_encode:
-                if embedding:
+                if embedding!=None:
                     c = embedding.unsqueeze(0, 1)
                 else:
                     if isinstance(xc, dict) or isinstance(xc, list):
