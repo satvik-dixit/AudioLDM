@@ -161,6 +161,7 @@ class LatentDiffusion(DDPM):
     def get_input(
         self,
         batch,
+        embedding,
         k,
         return_first_stage_encode=True,
         return_first_stage_outputs=False,
@@ -169,7 +170,7 @@ class LatentDiffusion(DDPM):
         return_original_cond=False,
         bs=None,
     ):
-        x = super().get_input(batch, k)
+        x = super().get_input(batch=batch, k=k)
 
         if bs is not None:
             x = x[:bs]
