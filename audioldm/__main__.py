@@ -152,7 +152,8 @@ if(args.file_path is not None):
     save_path = os.path.join(save_path, os.path.basename(args.file_path.split(".")[0]))
 
 text = args.text
-embedding = args.embedding
+embedding_path = args.embedding_path
+embedding = torch.load(embedding_path)
 random_seed = args.seed
 duration = args.duration
 guidance_scale = args.guidance_scale
