@@ -635,6 +635,7 @@ class LatentDiffusion(DDPM):
     def generate_sample(
         self,
         batchs,
+        embedding,
         ddim_steps=200,
         ddim_eta=1.0,
         x_T=None,
@@ -665,6 +666,7 @@ class LatentDiffusion(DDPM):
             for batch in batchs:
                 z, c = self.get_input(
                     batch,
+                    embedding,
                     self.first_stage_key,
                     cond_key=self.cond_stage_key,
                     return_first_stage_outputs=False,
