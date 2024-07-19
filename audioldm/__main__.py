@@ -28,6 +28,15 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "-e",
+    "--embedding_path",
+    type=str,
+    required=False,
+    default="",
+    help="path of saved embedding to the model for audio generation",
+)
+
+parser.add_argument(
     "-f",
     "--file_path",
     type=str,
@@ -143,6 +152,7 @@ if(args.file_path is not None):
     save_path = os.path.join(save_path, os.path.basename(args.file_path.split(".")[0]))
 
 text = args.text
+embedding = args.embedding
 random_seed = args.seed
 duration = args.duration
 guidance_scale = args.guidance_scale
@@ -155,6 +165,7 @@ if(args.mode == "generation"):
     waveform = text_to_audio(
         audioldm,
         text,
+        embedding,
         args.file_path,
         random_seed,
         duration=duration,
