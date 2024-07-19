@@ -110,6 +110,7 @@ def set_cond_text(latent_diffusion):
 def text_to_audio(
     latent_diffusion,
     text,
+    embedding, 
     original_audio_file_path = None,
     seed=42,
     ddim_steps=200,
@@ -138,6 +139,7 @@ def text_to_audio(
     with torch.no_grad():
         waveform = latent_diffusion.generate_sample(
             [batch],
+            embedding,
             unconditional_guidance_scale=guidance_scale,
             ddim_steps=ddim_steps,
             n_candidate_gen_per_text=n_candidate_gen_per_text,
