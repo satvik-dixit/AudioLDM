@@ -200,7 +200,8 @@ class LatentDiffusion(DDPM):
                 xc = x
             if not self.cond_stage_trainable or force_c_encode:
                 if embedding!=None:
-                    c = embedding.unsqueeze(0, 1)
+                    c = embedding.unsqueeze(0).unsqueeze(0)
+                    c = c.to(self.device)
                 else:
                     if isinstance(xc, dict) or isinstance(xc, list):
                         c = self.get_learned_conditioning(xc)
