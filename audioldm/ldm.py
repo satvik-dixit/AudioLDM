@@ -718,7 +718,12 @@ class LatentDiffusion(DDPM):
                     return_original_cond=False,
                     bs=None,
                 )
-                text = super().get_input(batch, "text")
+                print('c shape', c.shape)
+                print('c', c)
+                
+                for batch_ in batches:
+                    print('batch_', batch_)
+                    text = super().get_input(batch, "text")
                 
                 # Generate multiple samples
                 batch_size = z.shape[0] * n_candidate_gen_per_text
