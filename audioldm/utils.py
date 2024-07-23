@@ -25,7 +25,7 @@ def get_bit_depth(fname):
         bit_depth = f.getsampwidth() * 8
         return bit_depth
 
-def get_morphed_embedding(weights=[1,1], audio_embed):
+def get_morphed_embedding(weights, audio_embed):
 
     weights = torch.tensor(weights, dtype=torch.float32)
     weights = weights.to('cuda')
