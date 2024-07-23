@@ -29,6 +29,33 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "-m",
+    "--morphing",
+    type=bool,
+    required=False,
+    default=False,
+    help="Morph or not",
+)
+
+parser.add_argument(
+    "-tl",
+    "--text_list",
+    type=List,
+    required=False,
+    default=[],
+    help="Text prompts list to the model for audio generation",
+)
+
+parser.add_argument(
+    "-w",
+    "--weights",
+    type=List,
+    required=False,
+    default=[1],
+    help="Weights for morphing",
+)
+
+parser.add_argument(
     "-e",
     "--embedding_path",
     type=str,
@@ -158,6 +185,9 @@ if embedding_path:
     embedding = torch.load(embedding_path)
 else:
     embedding=None
+morphing = args.morphing
+weights = args.weights
+text_list = args.text_list
 random_seed = args.seed
 duration = args.duration
 guidance_scale = args.guidance_scale
@@ -170,6 +200,9 @@ if(args.mode == "generation"):
     waveform = text_to_audio(
         audioldm,
         text,
+        morphing, 
+        weights,
+        text_list,
         embedding,
         args.file_path,
         random_seed,
