@@ -3,7 +3,7 @@ import os
 import torch
 import numpy as np
 from tqdm import tqdm
-from audioldm.utils import default, instantiate_from_config, save_wave
+from audioldm.utils import default, instantiate_from_config, save_wave, get_morphed_embeddings
 from audioldm.latent_diffusion.ddpm import DDPM
 from audioldm.variational_autoencoder.distributions import DiagonalGaussianDistribution
 from audioldm.latent_diffusion.util import noise_like
@@ -157,10 +157,14 @@ class LatentDiffusion(DDPM):
             c = getattr(self.cond_stage_model, self.cond_stage_forward)(c)
         return c
 
+
     @torch.no_grad()
     def get_input(
         self,
         batch,
+        morphing,
+        weights,
+        batches,
         embedding,
         k,
         return_first_stage_encode=True,
@@ -183,42 +187,54 @@ class LatentDiffusion(DDPM):
         else:
             z = None
 
-        if self.model.conditioning_key is not None:
-            if cond_key is None:
-                cond_key = self.cond_stage_key
-            if cond_key != self.first_stage_key:
-                if cond_key in ["caption", "coordinates_bbox"]:
-                    xc = batch[cond_key]
-                elif cond_key == "class_label":
-                    xc = batch
-                else:
-                    # [bs, 1, 527]
-                    xc = super().get_input(batch, cond_key)
-                    if type(xc) == torch.Tensor:
-                        xc = xc.to(self.device)
-            else:
-                xc = x
-            if not self.cond_stage_trainable or force_c_encode:
-                if embedding!=None:
-                    c = embedding.unsqueeze(0).unsqueeze(0)
-                    c = c.to(self.device)
-                else:
-                    if isinstance(xc, dict) or isinstance(xc, list):
-                        c = self.get_learned_conditioning(xc)
+        if morphing:
+            c_list = []
+            for batch in batches:
+                if cond_key is None:
+                    cond_key = self.cond_stage_key
+                if cond_key != self.first_stage_key:
+                    if cond_key in ["caption", "coordinates_bbox"]:
+                        xc = batch[cond_key]
+                    elif cond_key == "class_label":
+                        xc = batch
                     else:
-                        c = self.get_learned_conditioning(xc.to(self.device))
-            else:
-                c = xc
-
-            # if bs is not None:
-            #     c = c[:bs]
+                        # [bs, 1, 527]
+                        xc = super().get_input(batch, cond_key)
+                        if type(xc) == torch.Tensor:
+                            xc = xc.to(self.device)
+                    c = self.get_learned_conditioning(xc)
+                    c_list.append(c)
+             c = get_morphed_embeddings(c_list, weights)
 
         else:
-            c = None
-            xc = None
-            if self.use_positional_encodings:
-                pos_x, pos_y = self.compute_latent_shifts(batch)
-                c = {"pos_x": pos_x, "pos_y": pos_y}
+            if self.model.conditioning_key is not None:
+                if cond_key is None:
+                    cond_key = self.cond_stage_key
+                if cond_key != self.first_stage_key:
+                    if cond_key in ["caption", "coordinates_bbox"]:
+                        xc = batch[cond_key]
+                    elif cond_key == "class_label":
+                        xc = batch
+                    else:
+                        # [bs, 1, 527]
+                        xc = super().get_input(batch, cond_key)
+                        if type(xc) == torch.Tensor:
+                            xc = xc.to(self.device)
+                    
+                else:
+                    xc = x
+                if not self.cond_stage_trainable or force_c_encode:
+                    if embedding!=None:
+                        c = embedding.unsqueeze(0).unsqueeze(0)
+                        c = c.to(self.device)
+                    else:
+                        if isinstance(xc, dict) or isinstance(xc, list):
+                            c = self.get_learned_conditioning(xc)
+                        else:
+                            c = self.get_learned_conditioning(xc.to(self.device))
+                else:
+                    c = xc
+
         out = [z, c]
         if return_first_stage_outputs:
             xrec = self.decode_first_stage(z)
@@ -640,6 +656,9 @@ class LatentDiffusion(DDPM):
     def generate_sample(
         self,
         batchs,
+        morphing,
+        weights,
+        batches,
         embedding,
         ddim_steps=200,
         ddim_eta=1.0,
@@ -668,19 +687,37 @@ class LatentDiffusion(DDPM):
         # print("Waveform save path: ", waveform_save_path)
 
         with self.ema_scope("Generate"):
-            for batch in batchs:
-                z, c = self.get_input(
-                    batch,
-                    embedding,
-                    self.first_stage_key,
-                    cond_key=self.cond_stage_key,
-                    return_first_stage_outputs=False,
-                    force_c_encode=True,
-                    return_original_cond=False,
-                    bs=None,
-                )
-                text = super().get_input(batch, "text")
-
+            if morphing==False:
+                for batch in batchs:
+                    z, c = self.get_input(
+                        batch,
+                        morphing,
+                        batches,
+                        embedding,
+                        self.first_stage_key,
+                        cond_key=self.cond_stage_key,
+                        return_first_stage_outputs=False,
+                        force_c_encode=True,
+                        return_original_cond=False,
+                        bs=None,
+                    )
+                    text = super().get_input(batch, "text")
+            else:
+                for batch in batches:
+                    z, c = self.get_input(
+                        batch,
+                        morphing,
+                        batches,
+                        embedding,
+                        self.first_stage_key,
+                        cond_key=self.cond_stage_key,
+                        return_first_stage_outputs=False,
+                        force_c_encode=True,
+                        return_original_cond=False,
+                        bs=None,
+                    )
+                    text = super().get_input(batch, "text")
+                
                 # Generate multiple samples
                 batch_size = z.shape[0] * n_candidate_gen_per_text
                 c = torch.cat([c] * n_candidate_gen_per_text, dim=0)
