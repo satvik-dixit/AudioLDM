@@ -703,20 +703,20 @@ class LatentDiffusion(DDPM):
                     )
                     text = super().get_input(batch, "text")
             else:
-                for batch in batches:
-                    z, c = self.get_input(
-                        batch,
-                        morphing,
-                        batches,
-                        embedding,
-                        self.first_stage_key,
-                        cond_key=self.cond_stage_key,
-                        return_first_stage_outputs=False,
-                        force_c_encode=True,
-                        return_original_cond=False,
-                        bs=None,
-                    )
-                    text = super().get_input(batch, "text")
+
+                z, c = self.get_input(
+                    batch,
+                    morphing,
+                    batches,
+                    embedding,
+                    self.first_stage_key,
+                    cond_key=self.cond_stage_key,
+                    return_first_stage_outputs=False,
+                    force_c_encode=True,
+                    return_original_cond=False,
+                    bs=None,
+                )
+                text = super().get_input(batch, "text")
                 
                 # Generate multiple samples
                 batch_size = z.shape[0] * n_candidate_gen_per_text
