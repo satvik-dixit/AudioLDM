@@ -24,6 +24,19 @@ def get_bit_depth(fname):
     with contextlib.closing(wave.open(fname, 'r')) as f:
         bit_depth = f.getsampwidth() * 8
         return bit_depth
+
+def get_morphed_embedding(weights=[1,1], audio_embed):
+
+    weights = torch.tensor(weights, dtype=torch.float32)
+    weights = weights.to('cuda')
+    weights = weights / weights.sum()
+
+    weights = weights.view(-1, 1)
+    audio_embed_tensor = torch.stack(audio_embed, dim=0).squeeze()  # Shape: [n, 512]
+    audio_embed_tensor = audio_embed_tensor.to('cuda')
+    morphed_embedding = torch.sum(weights * audio_embed_tensor, dim=0)
+
+    return morphed_embedding
        
 def get_time():
     t = time.localtime()
