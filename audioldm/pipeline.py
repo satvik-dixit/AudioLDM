@@ -110,6 +110,9 @@ def set_cond_text(latent_diffusion):
 def text_to_audio(
     latent_diffusion,
     text,
+    morphing,
+    weights,
+    text_list,
     embedding, 
     original_audio_file_path = None,
     seed=42,
@@ -124,8 +127,14 @@ def text_to_audio(
     waveform = None
     if(original_audio_file_path is not None):
         waveform = read_wav_file(original_audio_file_path, int(duration * 102.4) * 160)
-        
-    batch = make_batch_for_text_to_audio(text, waveform=waveform, batchsize=batchsize)
+
+    if morphing==False:
+        batch = make_batch_for_text_to_audio(text, waveform=waveform, batchsize=batchsize)
+    else:
+        batches = []
+        for text in text_list:
+            batch = make_batch_for_text_to_audio(text, waveform=waveform, batchsize=batchsize)
+            batches.append([batch])
 
     latent_diffusion.latent_t_size = duration_to_latent_t_size(duration)
     
@@ -139,6 +148,9 @@ def text_to_audio(
     with torch.no_grad():
         waveform = latent_diffusion.generate_sample(
             [batch],
+            morphing,
+            batches,
+            weights,
             embedding,
             unconditional_guidance_scale=guidance_scale,
             ddim_steps=ddim_steps,
