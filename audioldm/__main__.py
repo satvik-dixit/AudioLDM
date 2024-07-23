@@ -40,7 +40,7 @@ parser.add_argument(
 parser.add_argument(
     "-tl",
     "--text_list",
-    type=List,
+    type=list,
     required=False,
     default=[],
     help="Text prompts list to the model for audio generation",
@@ -49,7 +49,7 @@ parser.add_argument(
 parser.add_argument(
     "-w",
     "--weights",
-    type=List,
+    type=list,
     required=False,
     default=[1],
     help="Weights for morphing",
