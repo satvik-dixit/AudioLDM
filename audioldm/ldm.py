@@ -174,7 +174,7 @@ class LatentDiffusion(DDPM):
         return_original_cond=False,
         bs=None,
     ):
-        x = super().get_input(batch=batch, k=k)
+        x = super().get_input(batch, k)
 
         if bs is not None:
             x = x[:bs]
@@ -708,11 +708,11 @@ class LatentDiffusion(DDPM):
                 for batch in batchs:
                     print('batch gen sample', batch)
                     z, c = self.get_input(
-                        batch,
-                        morphing,
-                        weights,
-                        batches,
-                        embedding,
+                        batch = batch,
+                        morphing = morphing,
+                        weights = weights,
+                        batches = batches,
+                        embedding = embedding,
                         k = self.first_stage_key,
                         cond_key=self.cond_stage_key,
                         return_first_stage_outputs=False,
