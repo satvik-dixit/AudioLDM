@@ -692,6 +692,7 @@ class LatentDiffusion(DDPM):
                     z, c = self.get_input(
                         batch,
                         morphing,
+                        weights,
                         batches,
                         embedding,
                         self.first_stage_key,
@@ -707,9 +708,10 @@ class LatentDiffusion(DDPM):
                 z, c = self.get_input(
                     batch,
                     morphing,
+                    weights,
                     batches,
                     embedding,
-                    self.first_stage_key,
+                    k = self.first_stage_key,
                     cond_key=self.cond_stage_key,
                     return_first_stage_outputs=False,
                     force_c_encode=True,
