@@ -706,7 +706,7 @@ class LatentDiffusion(DDPM):
             else:
 
                 z, c = self.get_input(
-                    batch,
+                    batchs,
                     morphing,
                     weights,
                     batches,
