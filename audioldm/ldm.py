@@ -202,9 +202,9 @@ class LatentDiffusion(DDPM):
                         xc = super().get_input(batch, cond_key)
                         if type(xc) == torch.Tensor:
                             xc = xc.to(self.device)
-                    c = self.get_learned_conditioning(xc)
-                    c_list.append(c)
-             c = get_morphed_embeddings(c_list, weights)
+                c = self.get_learned_conditioning(xc)
+                c_list.append(c)
+            c = get_morphed_embeddings(c_list, weights)
 
         else:
             if self.model.conditioning_key is not None:
