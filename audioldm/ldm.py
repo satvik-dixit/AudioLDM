@@ -189,11 +189,11 @@ class LatentDiffusion(DDPM):
 
         if morphing:
             c_list = []
-            print('morphing batches', batches)
+            # print('morphing batches', batches)
             for batchs in batches:
-                print('batchs', batchs)
+                # print('batchs', batchs)
                 for batch in batchs:
-                    print('batch', batch)
+                    # print('batch', batch)
                     if cond_key is None:
                         cond_key = self.cond_stage_key
                     if cond_key != self.first_stage_key:
@@ -208,9 +208,9 @@ class LatentDiffusion(DDPM):
                                 xc = xc.to(self.device)
                     c = self.get_learned_conditioning(xc)
                     c_list.append(c)
-                    print('len clist', len(c_list))
-                    print('clist element shape', c_list[0].shape)
-            print('weights', weights)
+                    # print('len clist', len(c_list))
+                    # print('clist element shape', c_list[0].shape)
+            # print('weights', weights)
             c = get_morphed_embeddings(weights, c_list)
 
         else:
@@ -711,9 +711,9 @@ class LatentDiffusion(DDPM):
                     )
                     text = super().get_input(batch, "text")
             else:
-                print('batchs gen sample', batchs)
+                # print('batchs gen sample', batchs)
                 for batch in batchs:
-                    print('batch gen sample', batch)
+                    # print('batch gen sample', batch)
                     z, c = self.get_input(
                         batch = batch,
                         morphing = morphing,
@@ -728,9 +728,9 @@ class LatentDiffusion(DDPM):
                         bs=None,
                     )
                     text = super().get_input(batch, "text")
-                    print('text', text)
+                    # print('text', text)
                 c = c.unsqueeze(0).unsqueeze(0)
-                print('c shape', c.shape)
+                # print('c shape', c.shape)
                 # print('c', c)
 
                 # for batch_ in batches:
