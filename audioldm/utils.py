@@ -28,7 +28,7 @@ def get_bit_depth(fname):
 
 def get_morphed_embeddings(weights, audio_embed):
 
-    print('weights', weights)
+    # print('weights', weights)
 
     weights = torch.tensor(weights, dtype=torch.float32)
     weights = weights.to('cuda')
