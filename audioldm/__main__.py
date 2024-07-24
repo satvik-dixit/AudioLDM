@@ -187,8 +187,8 @@ else:
     embedding=None
 morphing = args.morphing
 weights = args.weights.split(',')
-print('weights', weights)
 weights = [int(w) for w in weights]
+print('weights', weights)
 text_list = args.text_list.split(',')
 print('text_list', text_list)
 random_seed = args.seed
