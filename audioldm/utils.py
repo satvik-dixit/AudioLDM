@@ -1,5 +1,6 @@
 import contextlib
 import importlib
+import torch
 
 from inspect import isfunction
 import os
@@ -19,13 +20,15 @@ def get_duration(fname):
         frames = f.getnframes()
         rate = f.getframerate()
         return frames / float(rate)
-    
+
 def get_bit_depth(fname):
     with contextlib.closing(wave.open(fname, 'r')) as f:
         bit_depth = f.getsampwidth() * 8
         return bit_depth
 
 def get_morphed_embeddings(weights, audio_embed):
+
+    print('weights', weights)
 
     weights = torch.tensor(weights, dtype=torch.float32)
     weights = weights.to('cuda')
@@ -37,7 +40,7 @@ def get_morphed_embeddings(weights, audio_embed):
     morphed_embedding = torch.sum(weights * audio_embed_tensor, dim=0)
 
     return morphed_embedding
-       
+
 def get_time():
     t = time.localtime()
     return time.strftime("%d_%m_%Y_%H_%M_%S", t)
@@ -110,7 +113,7 @@ def instantiate_from_config(config):
     return get_obj_from_str(config["target"])(**config.get("params", dict()))
 
 
-def default_audioldm_config(model_name="audioldm-s-full"):    
+def default_audioldm_config(model_name="audioldm-s-full"):
     basic_config = {
         "wave_file_save_path": "./output",
         "id": {
@@ -204,16 +207,16 @@ def default_audioldm_config(model_name="audioldm-s-full"):
             },
         },
     }
-    
+
     if("-l-" in model_name):
         basic_config["model"]["params"]["unet_config"]["params"]["model_channels"] = 256
         basic_config["model"]["params"]["unet_config"]["params"]["num_head_channels"] = 64
     elif("-m-" in model_name):
         basic_config["model"]["params"]["unet_config"]["params"]["model_channels"] = 192
         basic_config["model"]["params"]["cond_stage_config"]["params"]["amodel"] = "HTSAT-base" # This model use a larger HTAST
-        
+
     return basic_config
-        
+
 def get_metadata():
     return {
         "audioldm-s-full": {
@@ -259,7 +262,7 @@ def get_metadata():
             "url": "https://zenodo.org/record/7813012/files/audioldm-m-full.ckpt?download=1",
         },
     }
-    
+
 class MyProgressBar():
     def __init__(self):
         self.pbar = None
@@ -274,7 +277,7 @@ class MyProgressBar():
             self.pbar.update(downloaded)
         else:
             self.pbar.finish()
-            
+
 def download_checkpoint(checkpoint_name="audioldm-s-full"):
     meta = get_metadata()
     if(checkpoint_name not in meta.keys()):
@@ -291,4 +294,4 @@ def download_checkpoint(checkpoint_name="audioldm-s-full"):
                 os.path.getsize(meta[checkpoint_name]["path"]),
             )
         )
-    
+
