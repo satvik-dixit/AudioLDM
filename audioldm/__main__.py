@@ -40,18 +40,18 @@ parser.add_argument(
 parser.add_argument(
     "-tl",
     "--text_list",
-    type=list,
+    type=str,
     required=False,
-    default=[],
+    default="",
     help="Text prompts list to the model for audio generation",
 )
 
 parser.add_argument(
     "-w",
     "--weights",
-    type=list,
+    type=str,
     required=False,
-    default=[1],
+    default="",
     help="Weights for morphing",
 )
 
@@ -164,7 +164,7 @@ args = parser.parse_args()
 
 if(args.ckpt_path is not None):
     print("Warning: ckpt_path has no effect after version 0.0.20.")
-    
+
 assert args.duration % 2.5 == 0, "Duration must be a multiple of 2.5"
 
 mode = args.mode
@@ -173,7 +173,7 @@ if(mode == "generation" and args.file_path is not None):
     if(len(args.text) > 0):
         print("Warning: You have specified the --file_path. --text will be ignored")
         args.text = ""
-        
+
 save_path = os.path.join(args.save_path, mode)
 
 if(args.file_path is not None):
@@ -186,8 +186,11 @@ if embedding_path:
 else:
     embedding=None
 morphing = args.morphing
-weights = args.weights
-text_list = args.text_list
+weights = args.weights.split(',')
+print('weights', weights)
+weights = [int(w) for w in weights]
+text_list = args.text_list.split(',')
+print('text_list', text_list)
 random_seed = args.seed
 duration = args.duration
 guidance_scale = args.guidance_scale
@@ -200,7 +203,7 @@ if(args.mode == "generation"):
     waveform = text_to_audio(
         audioldm,
         text,
-        morphing, 
+        morphing,
         weights,
         text_list,
         embedding,
@@ -212,7 +215,7 @@ if(args.mode == "generation"):
         n_candidate_gen_per_text=n_candidate_gen_per_text,
         batchsize=args.batchsize,
     )
-    
+
 elif(args.mode == "transfer"):
     assert args.file_path is not None
     assert os.path.exists(args.file_path), "The original audio file \'%s\' for style transfer does not exist." % args.file_path
