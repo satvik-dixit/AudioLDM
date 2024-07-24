@@ -17,14 +17,14 @@ def make_batch_for_text_to_audio(text, waveform=None, fbank=None, batchsize=1):
     text = [text] * batchsize
     if batchsize < 1:
         print("Warning: Batchsize must be at least 1. Batchsize is set to .")
-    
+
     if(fbank is None):
         fbank = torch.zeros((batchsize, 1024, 64))  # Not used, here to keep the code format
     else:
         fbank = torch.FloatTensor(fbank)
         fbank = fbank.expand(batchsize, 1024, 64)
         assert fbank.size(0) == batchsize
-        
+
     stft = torch.zeros((batchsize, 1024, 512))  # Not used
 
     if(waveform is None):
@@ -33,9 +33,9 @@ def make_batch_for_text_to_audio(text, waveform=None, fbank=None, batchsize=1):
         waveform = torch.FloatTensor(waveform)
         waveform = waveform.expand(batchsize, -1)
         assert waveform.size(0) == batchsize
-        
+
     fname = [""] * batchsize  # Not used
-    
+
     batch = (
         fbank,
         stft,
@@ -55,10 +55,10 @@ def build_model(
     model_name="audioldm-s-full"
 ):
     print("Load AudioLDM: %s", model_name)
-    
+
     if(ckpt_path is None):
         ckpt_path = get_metadata()[model_name]["path"]
-    
+
     if(not os.path.exists(ckpt_path)):
         download_checkpoint(model_name)
 
@@ -106,14 +106,14 @@ def set_cond_text(latent_diffusion):
     latent_diffusion.cond_stage_key = "text"
     latent_diffusion.cond_stage_model.embed_mode="text"
     return latent_diffusion
-    
+
 def text_to_audio(
     latent_diffusion,
     text,
     morphing,
     weights,
     text_list,
-    embedding, 
+    embedding,
     original_audio_file_path = None,
     seed=42,
     ddim_steps=200,
@@ -137,20 +137,20 @@ def text_to_audio(
             batches.append([batch])
 
     latent_diffusion.latent_t_size = duration_to_latent_t_size(duration)
-    
+
     if(waveform is not None):
         print("Generate audio that has similar content as %s" % original_audio_file_path)
         latent_diffusion = set_cond_audio(latent_diffusion)
     else:
         print("Generate audio using text %s" % text)
         latent_diffusion = set_cond_text(latent_diffusion)
-        
+
     with torch.no_grad():
         waveform = latent_diffusion.generate_sample(
             [batch],
             morphing,
-            batches,
             weights,
+            batches,
             embedding,
             unconditional_guidance_scale=guidance_scale,
             ddim_steps=ddim_steps,
@@ -177,22 +177,22 @@ def style_transfer(
         device = torch.device("cpu")
 
     assert original_audio_file_path is not None, "You need to provide the original audio file path"
-    
+
     audio_file_duration = get_duration(original_audio_file_path)
-    
+
     assert get_bit_depth(original_audio_file_path) == 16, "The bit depth of the original audio file %s must be 16" % original_audio_file_path
-    
+
     # if(duration > 20):
     #     print("Warning: The duration of the audio file %s must be less than 20 seconds. Longer duration will result in Nan in model output (we are still debugging that); Automatically set duration to 20 seconds")
     #     duration = 20
-    
+
     if(duration > audio_file_duration):
         print("Warning: Duration you specified %s-seconds must equal or smaller than the audio file duration %ss" % (duration, audio_file_duration))
         duration = round_up_duration(audio_file_duration)
         print("Set new duration as %s-seconds" % duration)
 
     # duration = round_up_duration(duration)
-    
+
     latent_diffusion = set_cond_text(latent_diffusion)
 
     if config is not None:
@@ -294,17 +294,17 @@ def super_resolution_and_inpainting(
         config["preprocessing"]["mel"]["mel_fmin"],
         config["preprocessing"]["mel"]["mel_fmax"],
     )
-    
+
     # waveform = read_wav_file(original_audio_file_path, None)
     mel, _, _ = wav_to_fbank(
         original_audio_file_path, target_length=int(duration * 102.4), fn_STFT=fn_STFT
     )
-    
+
     batch = make_batch_for_text_to_audio(text, fbank=mel[None,...], batchsize=batchsize)
-        
+
     # latent_diffusion.latent_t_size = duration_to_latent_t_size(duration)
     latent_diffusion = set_cond_text(latent_diffusion)
-        
+
     with torch.no_grad():
         waveform = latent_diffusion.generate_sample_masked(
             [batch],
