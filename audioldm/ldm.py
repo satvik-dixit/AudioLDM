@@ -189,22 +189,29 @@ class LatentDiffusion(DDPM):
 
         if morphing:
             c_list = []
-            for batch in batches:
-                if cond_key is None:
-                    cond_key = self.cond_stage_key
-                if cond_key != self.first_stage_key:
-                    if cond_key in ["caption", "coordinates_bbox"]:
-                        xc = batch[cond_key]
-                    elif cond_key == "class_label":
-                        xc = batch
-                    else:
-                        # [bs, 1, 527]
-                        xc = super().get_input(batch, cond_key)
-                        if type(xc) == torch.Tensor:
-                            xc = xc.to(self.device)
-                c = self.get_learned_conditioning(xc)
-                c_list.append(c)
-            c = get_morphed_embeddings(c_list, weights)
+            print('morphing batches', batches)
+            for batchs in batches:
+                print('batchs', batchs)
+                for batch in batchs:
+                    print('batch', batch)
+                    if cond_key is None:
+                        cond_key = self.cond_stage_key
+                    if cond_key != self.first_stage_key:
+                        if cond_key in ["caption", "coordinates_bbox"]:
+                            xc = batch[cond_key]
+                        elif cond_key == "class_label":
+                            xc = batch
+                        else:
+                            # [bs, 1, 527]
+                            xc = super().get_input(batch, cond_key)
+                            if type(xc) == torch.Tensor:
+                                xc = xc.to(self.device)
+                    c = self.get_learned_conditioning(xc)
+                    c_list.append(c)
+                    print('len clist', len(c_list))
+                    print('clist element shape', c_list[0].shape)
+            print('weights', weights)
+            c = get_morphed_embeddings(weights, c_list)
 
         else:
             if self.model.conditioning_key is not None:
@@ -220,7 +227,7 @@ class LatentDiffusion(DDPM):
                         xc = super().get_input(batch, cond_key)
                         if type(xc) == torch.Tensor:
                             xc = xc.to(self.device)
-                    
+
                 else:
                     xc = x
                 if not self.cond_stage_trainable or force_c_encode:
@@ -720,13 +727,16 @@ class LatentDiffusion(DDPM):
                         return_original_cond=False,
                         bs=None,
                     )
-                print('c shape', c.shape)
-                print('c', c)
-                
-                for batch_ in batches:
-                    print('batch_', batch_)
                     text = super().get_input(batch, "text")
-                
+                    print('text', text)
+                c = c.unsqueeze(0).unsqueeze(0)
+                print('c shape', c.shape)
+                # print('c', c)
+
+                # for batch_ in batches:
+                #     print('batch_', batch_)
+
+
                 # Generate multiple samples
                 batch_size = z.shape[0] * n_candidate_gen_per_text
                 c = torch.cat([c] * n_candidate_gen_per_text, dim=0)
@@ -748,10 +758,10 @@ class LatentDiffusion(DDPM):
                     unconditional_conditioning=unconditional_conditioning,
                     use_plms=use_plms,
                 )
-                
+
                 if(torch.max(torch.abs(samples)) > 1e2):
                     samples = torch.clip(samples, min=-10, max=10)
-                    
+
                 mel = self.decode_first_stage(samples)
 
                 waveform = self.mel_spectrogram_to_waveform(mel)
@@ -817,18 +827,18 @@ class LatentDiffusion(DDPM):
                     bs=None,
                 )
                 text = super().get_input(batch, "text")
-                
+
                 # Generate multiple samples
                 batch_size = z.shape[0] * n_candidate_gen_per_text
-                
+
                 _, h, w = z.shape[0], z.shape[2], z.shape[3]
-                
+
                 mask = torch.ones(batch_size, h, w).to(self.device)
-                
-                mask[:, int(h * time_mask_ratio_start_and_end[0]) : int(h * time_mask_ratio_start_and_end[1]), :] = 0 
-                mask[:, :, int(w * freq_mask_ratio_start_and_end[0]) : int(w * freq_mask_ratio_start_and_end[1])] = 0 
+
+                mask[:, int(h * time_mask_ratio_start_and_end[0]) : int(h * time_mask_ratio_start_and_end[1]), :] = 0
+                mask[:, :, int(w * freq_mask_ratio_start_and_end[0]) : int(w * freq_mask_ratio_start_and_end[1])] = 0
                 mask = mask[:, None, ...]
-                
+
                 c = torch.cat([c] * n_candidate_gen_per_text, dim=0)
                 text = text * n_candidate_gen_per_text
 
