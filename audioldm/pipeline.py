@@ -131,10 +131,11 @@ def text_to_audio(
     if morphing==False:
         batch = make_batch_for_text_to_audio(text, waveform=waveform, batchsize=batchsize)
     else:
+        batch = make_batch_for_text_to_audio(text, waveform=waveform, batchsize=batchsize)
         batches = []
-        for text in text_list:
-            batch = make_batch_for_text_to_audio(text, waveform=waveform, batchsize=batchsize)
-            batches.append([batch])
+        for t in text_list:
+            b = make_batch_for_text_to_audio(t, waveform=waveform, batchsize=batchsize)
+            batches.append([b])
 
     latent_diffusion.latent_t_size = duration_to_latent_t_size(duration)
 
