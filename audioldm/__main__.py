@@ -153,6 +153,24 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "-al",
+    "--audio_paths_list",
+    type=str,
+    required=False,
+    default="",
+    help="List of audio paths",
+)
+
+parser.add_argument(
+    "-am",
+    "--audio_morphing",
+    type=bool,
+    required=False,
+    default=False,
+    help="Need to morph audios (True or False)",
+)
+
+parser.add_argument(
     "--seed",
     type=int,
     required=False,
