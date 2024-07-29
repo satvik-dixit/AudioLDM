@@ -189,27 +189,30 @@ class LatentDiffusion(DDPM):
 
         if morphing:
             c_list = []
-            # print('morphing batches', batches)
+            print('morphing batches', batches)
             for batchs in batches:
-                # print('batchs', batchs)
+                print('batchs', batchs)
                 for batch in batchs:
-                    # print('batch', batch)
-                    if cond_key is None:
-                        cond_key = self.cond_stage_key
-                    if cond_key != self.first_stage_key:
-                        if cond_key in ["caption", "coordinates_bbox"]:
-                            xc = batch[cond_key]
-                        elif cond_key == "class_label":
-                            xc = batch
-                        else:
-                            # [bs, 1, 527]
-                            xc = super().get_input(batch, cond_key)
-                            if type(xc) == torch.Tensor:
-                                xc = xc.to(self.device)
+                    print('batch', batch)
+                    if self.model.conditioning_key is not None:
+                        if cond_key is None:
+                            cond_key = self.cond_stage_key
+                        if cond_key != self.first_stage_key:
+                            if cond_key in ["caption", "coordinates_bbox"]:
+                                xc = batch[cond_key]
+                            elif cond_key == "class_label":
+                                xc = batch
+                            else:
+                                # [bs, 1, 527]
+                                print('final path taken')
+                                xc = super().get_input(batch, cond_key)
+                                if type(xc) == torch.Tensor:
+                                    xc = xc.to(self.device)
+                                print('xc', xc)
                     c = self.get_learned_conditioning(xc)
                     c_list.append(c)
-                    # print('len clist', len(c_list))
-                    # print('clist element shape', c_list[0].shape)
+                    print('len clist', len(c_list))
+                    print('clist element shape', c_list[0].shape)
             # print('weights', weights)
             c = get_morphed_embeddings(weights, c_list)
 
@@ -728,7 +731,7 @@ class LatentDiffusion(DDPM):
                         bs=None,
                     )
                     text = super().get_input(batch, "text")
-                    # print('text', text)
+                    print('text', text)
                 c = c.unsqueeze(0).unsqueeze(0)
                 # print('c shape', c.shape)
                 # print('c', c)
