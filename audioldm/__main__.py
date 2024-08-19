@@ -148,8 +148,8 @@ parser.add_argument(
     "--n_candidate_gen_per_text",
     type=int,
     required=False,
-    default=3,
-    help="Automatic quality control. This number control the number of candidates (e.g., generate three audios and choose the best to show you). A Larger value usually lead to better quality with heavier computation",
+    default=1,
+    help="Automatic quality control. This number controls the number of candidates (e.g., generate three audios and choose the best to show you). A Larger value usually lead to better quality with heavier computation",
 )
 
 parser.add_argument(
@@ -204,11 +204,20 @@ if embedding_path:
 else:
     embedding=None
 morphing = args.morphing
-weights = args.weights.split(',')
-weights = [int(w) for w in weights]
-print('weights', weights)
-text_list = args.text_list.split(',')
-print('text_list', text_list)
+if morphing:
+    weights = args.weights.split(',')
+    weights = [int(w) for w in weights]
+    print('weights', weights)
+    text_list = args.text_list.split(',')
+    print('text_list', text_list)
+audio_morphing = args.audio_morphing
+if audio_morphing:
+    weights = args.weights.split(',')
+    weights = [int(w) for w in weights]
+    print('weights', weights)
+    audio_list = args.audio_list.split(',')
+    print('audio_list', audio_list)
+
 random_seed = args.seed
 duration = args.duration
 guidance_scale = args.guidance_scale
