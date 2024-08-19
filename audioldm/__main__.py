@@ -215,7 +215,7 @@ if audio_morphing:
     weights = args.weights.split(',')
     weights = [int(w) for w in weights]
     print('weights', weights)
-    audio_list = args.audio_list.split(',')
+    audio_list = args.audio_paths_list.split(',')
     print('audio_list', audio_list)
 
 random_seed = args.seed
@@ -233,6 +233,8 @@ if(args.mode == "generation"):
         morphing,
         weights,
         text_list,
+        audio_morphing,
+        audio_list,
         embedding,
         args.file_path,
         random_seed,
