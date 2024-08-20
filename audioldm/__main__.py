@@ -226,7 +226,26 @@ n_candidate_gen_per_text = args.n_candidate_gen_per_text
 os.makedirs(save_path, exist_ok=True)
 audioldm = build_model(model_name=args.model_name)
 
-if(args.mode == "generation"):
+
+if(args.audio_morphing == True):
+    # assert args.file_path is not None
+    # assert os.path.exists(args.file_path), "The original audio file \'%s\' for style transfer does not exist." % args.file_path
+    waveform = style_transfer(
+        audioldm,
+        text,
+        audio_list,  # List of (audio_path, weight) tuples
+        weights,
+        args.transfer_strength,
+        random_seed,
+        duration=duration,
+        guidance_scale=guidance_scale,
+        ddim_steps=args.ddim_steps,
+        batchsize=args.batchsize,
+    )
+    waveform = waveform[:,None,:]
+
+
+elif(args.mode == "generation"):
     waveform = text_to_audio(
         audioldm,
         text,
@@ -260,5 +279,7 @@ elif(args.mode == "transfer"):
         batchsize=args.batchsize,
     )
     waveform = waveform[:,None,:]
+
+
 
 save_wave(waveform, save_path, name="%s_%s" % (get_time(), text))
