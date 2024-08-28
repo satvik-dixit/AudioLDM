@@ -252,8 +252,6 @@ elif(args.mode == "generation"):
         morphing,
         weights,
         text_list,
-        audio_morphing,
-        audio_list,
         embedding,
         args.file_path,
         random_seed,
